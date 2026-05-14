@@ -26,9 +26,9 @@ rustflags = [
 
 [profile.release]
 rustflags = [
-  "-C", "link-arg=-fuse-ld=mold",
-  "-C", "link-arg=-Wl,--icf=all",
-  "-C", "relro-level=full",
+  # "-C", "link-arg=-fuse-ld=mold",
+  # "-C", "link-arg=-Wl,--icf=all",
+  # "-C", "relro-level=full",
   # "-C", "target-cpu=native",
   # "--cfg", "reqwest_unstable",
 ]
@@ -44,3 +44,17 @@ rustflags = [
 # [target.'cfg(target_env = "msvc")']
 # rustflags = [
 # ]
+
+[target.aarch64-linux-android]
+rustflags = [
+  "-C", "link-arg=-Wl,--gc-sections",
+  "-C", "link-arg=-Wl,--icf=safe",
+  "-C", "link-arg=-Wl,-O2",
+]
+
+[target.x86_64-linux-android]
+rustflags = [
+  "-C", "link-arg=-Wl,--gc-sections",
+  "-C", "link-arg=-Wl,--icf=safe",
+  "-C", "link-arg=-Wl,-O2",
+]
