@@ -1,0 +1,38 @@
+[changelog]
+header = """
+# Changelog
+
+"""
+
+body = """
+## {{ version }} - {{ timestamp | date(format="%Y-%m-%d %H:%M") }}
+
+{% if release_link %}[compare changes]({{ release_link }}){% endif %}
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group }}
+
+{% for commit in commits %}
+{%- if commit.scope -%}
+- *({{ commit.scope }})* {% if commit.breaking %}[**breaking**] {% endif %}{{ commit.message }}{%- if commit.links %} ({% for link in commit.links %}[{{ link.text }}]({{ link.href }}) {% endfor -%}){% endif %} ([{{ commit.id | truncate(length=7, end="") }}](https://github.com/ws-io/ws.io-rs/commit/{{ commit.id | truncate(length=7, end="") }}))
+{% else -%}
+- {% if commit.breaking %}[**breaking**] {% endif %}{{ commit.message }}{%- if commit.links %} ({% for link in commit.links %}[{{ link.text }}]({{ link.href }}) {% endfor -%}){% endif %} ([{{ commit.id | truncate(length=7, end="") }}](https://github.com/ws-io/ws.io-rs/commit/{{ commit.id | truncate(length=7, end="") }}))
+{% endif -%}
+{% endfor -%}
+{% endfor %}
+"""
+
+commit_parsers = [
+  { message = "^feat", group = "🚀 Enhancements" },
+  { message = "^fix", group = "🩹 Fixes" },
+  { message = "^perf", group = "🔥 Performance" },
+  { message = "^refactor", group = "💅 Refactors" },
+  { message = "^docs", group = "📖 Documentation" },
+  { message = "^style", group = "🎨 Styles" },
+  { message = "^examples", group = "🏀 Examples" },
+  { message = "^types", group = "🌊 Types" },
+  { message = "^test", group = "✅ Tests" },
+  { message = "^build", group = "📦 Build" },
+  { message = "^ci", group = "🤖 CI" },
+  { message = "^chore", group = "🏡 Chore" },
+  { message = "^.*", group = "📌 Others" },
+]
