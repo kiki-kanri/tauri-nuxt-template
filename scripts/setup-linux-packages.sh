@@ -16,10 +16,10 @@ APT_PACKAGES=(
     unzip
 )
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+SCRIPT_DIR="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 
-# shellcheck source=scripts/lib/common.sh
-source "$SCRIPT_DIR/lib/common.sh"
+# shellcheck source=scripts/libs/common.sh
+source "${SCRIPT_DIR}/libs/common.sh"
 
 usage() {
     cat <<'EOF_USAGE'
@@ -36,7 +36,7 @@ apt_runner() {
         return 0
     fi
 
-    need_command sudo
+    require_cmd sudo
     printf 'sudo apt-get\n'
 }
 
@@ -44,8 +44,8 @@ missing_apt_packages() {
     local package
 
     for package in "${APT_PACKAGES[@]}"; do
-        if ! dpkg-query -W -f='${Status}' "$package" 2>/dev/null | grep -Fxq 'install ok installed'; then
-            printf '%s\n' "$package"
+        if ! dpkg-query -W -f='${Status}' "${package}" 2>/dev/null | grep -Fxq 'install ok installed'; then
+            printf '%s\n' "${package}"
         fi
     done
 }
@@ -55,17 +55,17 @@ install_apt_packages() {
     mapfile -t missing_packages < <(missing_apt_packages)
 
     if [[ "${#missing_packages[@]}" -eq 0 ]]; then
-        ok "Linux system packages already installed"
+        log_success "Linux system packages already installed"
         return 0
     fi
 
-    step "Installing missing Linux system packages: ${missing_packages[*]}"
+    log_info "==> Installing missing Linux system packages: ${missing_packages[*]}"
     apt="$(apt_runner)"
 
     # shellcheck disable=SC2086 # apt may intentionally include sudo prefix.
-    $apt update
+    ${apt} update
     # shellcheck disable=SC2086 # apt may intentionally include sudo prefix.
-    $apt install -y --no-install-recommends "${missing_packages[@]}"
+    ${apt} install -y --no-install-recommends "${missing_packages[@]}"
 }
 
 main() {
@@ -75,15 +75,15 @@ main() {
         return 0
         ;;
     '') ;;
-    *) fail "Unexpected argument: $1" ;;
+    *) fail "Unexpected argument: ${1}" ;;
     esac
 
     [[ "$(host_os)" == linux ]] || fail "Linux package setup supports Linux only"
-    need_command apt-get
-    need_command dpkg-query
+    require_cmd apt-get
+    require_cmd dpkg-query
 
     install_apt_packages
-    ok "Linux package setup complete"
+    log_success "Linux package setup complete"
 }
 
 main "$@"

@@ -1,0 +1,45 @@
+# libs quick reference
+
+- Source baseline helpers: `source "<repo>/scripts/libs/common.sh"`
+- `libs/common.sh`: sets `LIBS_DIR`, `REPO_ROOT`, `SCRIPT_NAME`, `SCRIPT_DIR`; loads baseline helper modules (`log`, `command`, `file`, `path`, `platform`, `prompt`, `rust`, `setup-runtime`).
+- `project-env.sh`: keeps Android SDK/JDK/Gradle/Android user-home paths project-local under `.build/android`.
+- Source project/platform helpers only when needed:
+  - `source "<repo>/scripts/libs/project-env.sh"`
+  - `source "<repo>/scripts/libs/android-env.sh"`
+  - `source "<repo>/scripts/libs/apple-env.sh"`
+  - `source "<repo>/scripts/libs/tauri-cli.sh"`
+- `log_debug msg...`: print DEBUG to stderr when `VERBOSE=1|yes|true`.
+- `log_info msg...`: print INFO to stdout.
+- `log_success msg...`: print SUCCESS to stdout.
+- `log_warn msg...`: print WARN to stderr.
+- `log_error msg...`: print ERROR to stderr.
+- `command_exists cmd`: return 0 if exactly one command exists; return 2 on bad arity.
+- `require_cmd cmd...`: exit if any command is missing; supports `--optional` to warn/return 1 instead.
+- `require_any_cmd cmd...`: print first available command; exit if none are found.
+- `require_env NAME`: exit if an environment variable is unset or empty.
+- `require_root`: exit unless running as root.
+- `require_file path`: return 0 if regular file exists; log error/return 1 otherwise.
+- `require_dir path`: return 0 if directory exists; log error/return 1 otherwise.
+- `install_file src dest [mode]`: copy file, create parent dir, optionally chmod destination.
+- `ensure_parent_dir path`: create a path's parent directory.
+- `write_file_if_changed path`: read stdin and update the file only when content differs.
+- `copy_dir_contents source target`: copy source directory contents into target.
+- `copy_path_into_dir source target_dir`: copy a file or directory into target.
+- `install_cleanup_trap`: clean tracked temp dirs on exit.
+- `make_temp_dir`: create a tracked temporary directory and print its path.
+- `safe_rm_rf_under path root`: remove a path only when it is strictly under root.
+- `fail msg...`: log an error and exit 1.
+- `absolute_path path [base]`: print absolute path without resolving symlinks/nonexistent final component.
+- `canonical_path path`: print physical path; resolves existing dirs and parent dir of files/nonexistent targets.
+- `repo_root_from [dir]`: walk upward to nearest `.git`; print root or return 1.
+- `require_under_root path root`: exit if path is outside root after canonicalization.
+- `host_os`: print `linux|macos|windows|unknown` from `uname -s`.
+- `host_arch`: print normalized arch (`x86_64`, `aarch64`, `armv7`, or raw `uname -m`).
+- `detect_architecture`: print supported install arch (`x86_64|aarch64`); error otherwise.
+- `confirm prompt [--default=yes|--default=no] [--force]`: interactive yes/no; returns default when no tty.
+- `prepend_cargo_bin_to_path`: add `$HOME/.cargo/bin` to PATH if present and not already included.
+- `encode_rustflags flag...`: print flags joined with Cargo unit-separator encoding.
+- `exec_with_encoded_rustflags [array_name] command...`: exec command with `CARGO_ENCODED_RUSTFLAGS`; default array name is `rustflags`.
+- `ensure_cargo_target target`: install Rust target with rustup if missing.
+- `require_cargo_zigbuild`: require `cargo-zigbuild` and `zig`.
+- Internal: `lc_*` functions/vars in `libs/log.sh` are private implementation details; avoid calling directly.

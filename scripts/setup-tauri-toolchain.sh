@@ -9,13 +9,13 @@ ANDROID_RUST_TARGETS=(
     x86_64-linux-android
 )
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+SCRIPT_DIR="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 
-# shellcheck source=scripts/lib/common.sh
-source "$SCRIPT_DIR/lib/common.sh"
+# shellcheck source=scripts/libs/common.sh
+source "${SCRIPT_DIR}/libs/common.sh"
 
-# shellcheck source=scripts/lib/tauri-cli.sh
-source "$SCRIPT_DIR/lib/tauri-cli.sh"
+# shellcheck source=scripts/libs/tauri-cli.sh
+source "${SCRIPT_DIR}/libs/tauri-cli.sh"
 
 usage() {
     cat <<'EOF_USAGE'
@@ -30,7 +30,7 @@ EOF_USAGE
 }
 
 install_android_rust_targets() {
-    step "Installing Rust Android targets"
+    log_info "==> Installing Rust Android targets"
     rustup target add "${ANDROID_RUST_TARGETS[@]}"
 }
 
@@ -41,11 +41,11 @@ main() {
         return 0
         ;;
     '') ;;
-    *) fail "Unexpected argument: $1" ;;
+    *) fail "Unexpected argument: ${1}" ;;
     esac
 
-    need_command cargo
-    need_command rustup
+    require_cmd cargo
+    require_cmd rustup
 
     install_android_rust_targets
     install_tauri_cli

@@ -11,18 +11,18 @@ SIGNING_DNAME="${APP_NAME_PLACEHOLDER_ANDROID_SIGNING_DNAME:-CN=app-name-placeho
 SIGNING_VALIDITY_DAYS="${APP_NAME_PLACEHOLDER_ANDROID_SIGNING_VALIDITY_DAYS:-10000}"
 SIGNING_KEYSTORE_NAME=upload-keystore.p12
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+SCRIPT_DIR="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 
-# shellcheck source=scripts/lib/common.sh
-source "$SCRIPT_DIR/lib/common.sh"
+# shellcheck source=scripts/libs/common.sh
+source "${SCRIPT_DIR}/libs/common.sh"
 
-# shellcheck source=scripts/lib/project-env.sh
-source "$SCRIPT_DIR/lib/project-env.sh"
+# shellcheck source=scripts/libs/project-env.sh
+source "${SCRIPT_DIR}/libs/project-env.sh"
 
-SETUP_JDK_SCRIPT="$ROOT/scripts/setup-jdk.sh"
+SETUP_JDK_SCRIPT="${ROOT}/scripts/setup-jdk.sh"
 
-# shellcheck source=scripts/lib/android-env.sh
-source "$ROOT/scripts/lib/android-env.sh"
+# shellcheck source=scripts/libs/android-env.sh
+source "${ROOT}/scripts/libs/android-env.sh"
 
 usage() {
     cat <<'EOF_USAGE'
@@ -52,7 +52,7 @@ main() {
         return 0
         ;;
     '') ;;
-    *) fail "Unexpected argument: $1" ;;
+    *) fail "Unexpected argument: ${1}" ;;
     esac
 
     android_require_linux
@@ -60,12 +60,12 @@ main() {
     install_cleanup_trap
     android_prepare_directories
 
-    "$SETUP_JDK_SCRIPT"
+    "${SETUP_JDK_SCRIPT}"
     android_install_cmdline_tools
     android_install_sdk_packages
     android_create_signing_material
     android_write_env_file
-    ok "Android environment setup complete"
+    log_success "Android environment setup complete"
 }
 
 main "$@"

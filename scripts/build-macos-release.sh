@@ -4,23 +4,23 @@ set -euo pipefail
 # macOS release build entrypoint. Produces a signed universal .app/.dmg for
 # direct distribution and a signed .pkg for Mac App Store upload.
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+SCRIPT_DIR="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 
-# shellcheck source=scripts/lib/common.sh
-source "$SCRIPT_DIR/lib/common.sh"
+# shellcheck source=scripts/libs/common.sh
+source "${SCRIPT_DIR}/libs/common.sh"
 
-# shellcheck source=scripts/lib/project-env.sh
-source "$SCRIPT_DIR/lib/project-env.sh"
+# shellcheck source=scripts/libs/project-env.sh
+source "${SCRIPT_DIR}/libs/project-env.sh"
 
-SETUP_MACOS_ENV_SCRIPT="$ROOT/scripts/setup-macos-env.sh"
-MACOS_ENV_FILE="$BUILD_ROOT/macos/env.sh"
-MACOS_DIST_ROOT="$DIST_ROOT/macos"
-MACOS_APPSTORE_ROOT="$BUILD_ROOT/macos/appstore"
-MACOS_APPSTORE_CONFIG="$MACOS_APPSTORE_ROOT/tauri.appstore.conf.json"
-MACOS_APPSTORE_ENTITLEMENTS="$MACOS_APPSTORE_ROOT/Entitlements.plist"
-MACOS_BUILD_ROOT="$ROOT/target/universal-apple-darwin/release"
-MACOS_BUNDLE_ROOT="$MACOS_BUILD_ROOT/bundle/macos"
-MACOS_DMG_ROOT="$MACOS_BUILD_ROOT/bundle/dmg"
+SETUP_MACOS_ENV_SCRIPT="${ROOT}/scripts/setup-macos-env.sh"
+MACOS_ENV_FILE="${BUILD_ROOT}/macos/env.sh"
+MACOS_DIST_ROOT="${DIST_ROOT}/macos"
+MACOS_APPSTORE_ROOT="${BUILD_ROOT}/macos/appstore"
+MACOS_APPSTORE_CONFIG="${MACOS_APPSTORE_ROOT}/tauri.appstore.conf.json"
+MACOS_APPSTORE_ENTITLEMENTS="${MACOS_APPSTORE_ROOT}/Entitlements.plist"
+MACOS_BUILD_ROOT="${ROOT}/target/universal-apple-darwin/release"
+MACOS_BUNDLE_ROOT="${MACOS_BUILD_ROOT}/bundle/macos"
+MACOS_DMG_ROOT="${MACOS_BUILD_ROOT}/bundle/dmg"
 MACOS_ALLOW_LOCAL_TEST_BUILD="${MACOS_ALLOW_LOCAL_TEST_BUILD:-0}"
 
 usage() {
@@ -54,13 +54,13 @@ EOF_USAGE
 }
 
 macos_signing_identity_configured() {
-    grep -Eq '"signingIdentity"[[:space:]]*:[[:space:]]*"[^"]+"' "$TAURI_DIR/tauri.conf.json" 2>/dev/null ||
-        grep -Eq '"signingIdentity"[[:space:]]*:[[:space:]]*"[^"]+"' "$TAURI_DIR/tauri.macos.conf.json" 2>/dev/null
+    grep -Eq '"signingIdentity"[[:space:]]*:[[:space:]]*"[^"]+"' "${TAURI_DIR}/tauri.conf.json" 2>/dev/null ||
+        grep -Eq '"signingIdentity"[[:space:]]*:[[:space:]]*"[^"]+"' "${TAURI_DIR}/tauri.macos.conf.json" 2>/dev/null
 }
 
 validate_macos_signing() {
-    if [[ "$MACOS_ALLOW_LOCAL_TEST_BUILD" == 1 ]]; then
-        warn "MACOS_ALLOW_LOCAL_TEST_BUILD=1: skipping release signing checks"
+    if [[ "${MACOS_ALLOW_LOCAL_TEST_BUILD}" == 1 ]]; then
+        log_warn "MACOS_ALLOW_LOCAL_TEST_BUILD=1: skipping release signing checks"
         return 0
     fi
 
@@ -71,23 +71,23 @@ validate_macos_signing() {
     require_env APPLE_INSTALLER_SIGNING_IDENTITY
     require_env APPLE_TEAM_ID
     require_env MACOS_APP_STORE_PROVISION_PROFILE
-    [[ -f "$MACOS_APP_STORE_PROVISION_PROFILE" ]] || fail "Mac App Store provisioning profile not found: $MACOS_APP_STORE_PROVISION_PROFILE"
+    [[ -f "${MACOS_APP_STORE_PROVISION_PROFILE}" ]] || fail "Mac App Store provisioning profile not found: ${MACOS_APP_STORE_PROVISION_PROFILE}"
 }
 
 tauri_identifier() {
-    sed -n 's/.*"identifier"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$TAURI_DIR/tauri.conf.json" | head -n 1
+    sed -n 's/.*"identifier"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "${TAURI_DIR}/tauri.conf.json" | head -n 1
 }
 
 write_app_store_config() {
-    [[ "$MACOS_ALLOW_LOCAL_TEST_BUILD" != 1 ]] || return 0
+    [[ "${MACOS_ALLOW_LOCAL_TEST_BUILD}" != 1 ]] || return 0
 
     local identifier
     identifier="$(tauri_identifier)"
-    [[ -n "$identifier" ]] || fail "Could not read Tauri identifier from $TAURI_DIR/tauri.conf.json"
+    [[ -n "${identifier}" ]] || fail "Could not read Tauri identifier from ${TAURI_DIR}/tauri.conf.json"
 
-    ensure_dir "$MACOS_APPSTORE_ROOT"
+    mkdir -p -- "${MACOS_APPSTORE_ROOT}"
 
-    cat >"$MACOS_APPSTORE_ENTITLEMENTS" <<EOF_ENTITLEMENTS
+    cat >"${MACOS_APPSTORE_ENTITLEMENTS}" <<EOF_ENTITLEMENTS
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -95,21 +95,21 @@ write_app_store_config() {
     <key>com.apple.security.app-sandbox</key>
     <true/>
     <key>com.apple.application-identifier</key>
-    <string>$APPLE_TEAM_ID.$identifier</string>
+    <string>${APPLE_TEAM_ID}.${identifier}</string>
     <key>com.apple.developer.team-identifier</key>
-    <string>$APPLE_TEAM_ID</string>
+    <string>${APPLE_TEAM_ID}</string>
 </dict>
 </plist>
 EOF_ENTITLEMENTS
 
-    cat >"$MACOS_APPSTORE_CONFIG" <<EOF_CONFIG
+    cat >"${MACOS_APPSTORE_CONFIG}" <<EOF_CONFIG
 {
   "bundle": {
     "category": "Utility",
     "macOS": {
-      "entitlements": "$MACOS_APPSTORE_ENTITLEMENTS",
+      "entitlements": "${MACOS_APPSTORE_ENTITLEMENTS}",
       "files": {
-        "embedded.provisionprofile": "$MACOS_APP_STORE_PROVISION_PROFILE"
+        "embedded.provisionprofile": "${MACOS_APP_STORE_PROVISION_PROFILE}"
       }
     }
   }
@@ -118,74 +118,75 @@ EOF_CONFIG
 }
 
 clean_macos_bundle_outputs() {
-    safe_rm_rf_under "$MACOS_BUILD_ROOT/bundle" "$ROOT"
+    safe_rm_rf_under "${MACOS_BUILD_ROOT}/bundle" "${ROOT}"
 }
 
 build_macos_artifacts() {
     clean_macos_bundle_outputs
 
-    if [[ "$MACOS_ALLOW_LOCAL_TEST_BUILD" == 1 ]]; then
-        step "Building local unsigned macOS universal app"
-        (cd "$APP_DIR" && cargo tauri build --bundles app --target universal-apple-darwin --ci --no-sign)
+    if [[ "${MACOS_ALLOW_LOCAL_TEST_BUILD}" == 1 ]]; then
+        log_info "==> Building local unsigned macOS universal app"
+        (cd "${APP_DIR}" && cargo tauri build --bundles app --target universal-apple-darwin --ci --no-sign)
         return 0
     fi
 
-    step "Building macOS universal app and DMG"
-    (cd "$APP_DIR" && cargo tauri build --bundles app,dmg --target universal-apple-darwin --ci)
+    log_info "==> Building macOS universal app and DMG"
+    (cd "${APP_DIR}" && cargo tauri build --bundles app,dmg --target universal-apple-darwin --ci)
 }
 
 build_app_store_app() {
-    [[ "$MACOS_ALLOW_LOCAL_TEST_BUILD" != 1 ]] || return 0
+    [[ "${MACOS_ALLOW_LOCAL_TEST_BUILD}" != 1 ]] || return 0
 
     clean_macos_bundle_outputs
 
-    step "Building Mac App Store app bundle"
-    (cd "$APP_DIR" && cargo tauri build --bundles app --target universal-apple-darwin --config "$MACOS_APPSTORE_CONFIG" --ci)
+    log_info "==> Building Mac App Store app bundle"
+    (cd "${APP_DIR}" && cargo tauri build --bundles app --target universal-apple-darwin --config "${MACOS_APPSTORE_CONFIG}" --ci)
 }
 
 copy_direct_distribution_outputs() {
     local output copied=0
 
-    step "Copying macOS .app/.dmg outputs to dist/macos"
-    safe_rm_rf_under "$MACOS_DIST_ROOT" "$ROOT"
-    ensure_dir "$MACOS_DIST_ROOT"
+    log_info "==> Copying macOS .app/.dmg outputs to dist/macos"
+    safe_rm_rf_under "${MACOS_DIST_ROOT}" "${ROOT}"
+    mkdir -p -- "${MACOS_DIST_ROOT}"
 
     while IFS= read -r output; do
-        copy_path_into_dir "$output" "$MACOS_DIST_ROOT"
+        copy_path_into_dir "${output}" "${MACOS_DIST_ROOT}"
         copied=$((copied + 1))
-        ok "macOS output: $MACOS_DIST_ROOT/$(basename "$output")"
+        log_success "macOS output: ${MACOS_DIST_ROOT}/$(basename "${output}")"
     done < <(
         {
-            find "$MACOS_BUNDLE_ROOT" -maxdepth 1 -type d -name '*.app' 2>/dev/null
-            find "$MACOS_DMG_ROOT" -type f -name '*.dmg' 2>/dev/null
+            find "${MACOS_BUNDLE_ROOT}" -maxdepth 1 -type d -name '*.app' 2>/dev/null
+            find "${MACOS_DMG_ROOT}" -type f -name '*.dmg' 2>/dev/null
         } | sort
     )
 
-    [[ "$copied" -gt 0 ]] || fail "No macOS .app/.dmg outputs found under $MACOS_BUILD_ROOT/bundle"
+    [[ "${copied}" -gt 0 ]] || fail "No macOS .app/.dmg outputs found under ${MACOS_BUILD_ROOT}/bundle"
 }
 
 build_app_store_pkg() {
-    [[ "$MACOS_ALLOW_LOCAL_TEST_BUILD" != 1 ]] || return 0
+    [[ "${MACOS_ALLOW_LOCAL_TEST_BUILD}" != 1 ]] || return 0
 
     local app_path pkg_path app_name_placeholder
 
-    app_path="$(find "$MACOS_BUNDLE_ROOT" -maxdepth 1 -type d -name '*.app' 2>/dev/null | sort | head -n 1)"
-    [[ -n "$app_path" ]] || fail "No .app bundle found under $MACOS_BUNDLE_ROOT"
+    app_path="$(find "${MACOS_BUNDLE_ROOT}" -maxdepth 1 -type d -name '*.app' 2>/dev/null | sort | head -n 1)"
+    [[ -n "${app_path}" ]] || fail "No .app bundle found under ${MACOS_BUNDLE_ROOT}"
 
-    app_name_placeholder="$(basename "$app_path" .app)"
-    pkg_path="$MACOS_DIST_ROOT/$app_name_placeholder.pkg"
+    app_name_placeholder="$(basename "${app_path}" .app)"
+    pkg_path="${MACOS_DIST_ROOT}/${app_name_placeholder}.pkg"
 
-    step "Building Mac App Store PKG"
+    log_info "==> Building Mac App Store PKG"
     xcrun productbuild \
-        --sign "$APPLE_INSTALLER_SIGNING_IDENTITY" \
-        --component "$app_path" /Applications \
-        "$pkg_path"
-    ok "PKG: $pkg_path"
+        --sign "${APPLE_INSTALLER_SIGNING_IDENTITY}" \
+        --component "${app_path}" /Applications \
+        "${pkg_path}"
+
+    log_success "PKG: ${pkg_path}"
 }
 
 main() {
     while [[ "$#" -gt 0 ]]; do
-        case "$1" in
+        case "${1}" in
         -h | --help)
             usage
             return 0
@@ -193,18 +194,18 @@ main() {
         --local-test)
             MACOS_ALLOW_LOCAL_TEST_BUILD=1
             ;;
-        *) fail "Unexpected argument: $1" ;;
+        *) fail "Unexpected argument: ${1}" ;;
         esac
         shift
     done
 
-    "$SETUP_MACOS_ENV_SCRIPT"
+    "${SETUP_MACOS_ENV_SCRIPT}"
 
-    [[ -d "$APP_DIR" ]] || fail "App directory not found: $APP_DIR"
-    [[ -f "$MACOS_ENV_FILE" ]] || fail "macOS env file not found; run scripts/setup-macos-env.sh first"
+    [[ -d "${APP_DIR}" ]] || fail "App directory not found: ${APP_DIR}"
+    [[ -f "${MACOS_ENV_FILE}" ]] || fail "macOS env file not found; run scripts/setup-macos-env.sh first"
 
     # shellcheck source=/dev/null
-    source "$MACOS_ENV_FILE"
+    source "${MACOS_ENV_FILE}"
 
     validate_macos_signing
     write_app_store_config
