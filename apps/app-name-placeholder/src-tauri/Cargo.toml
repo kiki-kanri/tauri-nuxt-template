@@ -34,11 +34,11 @@ name = "app_name_placeholder_rust_lib"
 [dependencies]
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.149"
-tauri = { version = "2.11.1", features = [] }
+tauri = { version = "2.11.2", features = [] }
 tauri-plugin-opener = "2.5.4"
 
 [build-dependencies]
-tauri-build = { version = "2.6.1", features = [] }
+tauri-build = { version = "2.6.2", features = [] }
 
 # Features
 [features]
