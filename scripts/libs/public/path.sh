@@ -11,7 +11,7 @@ fi
 LINUX_CONFIGS_LIBS_PATH_LOADED=1
 
 absolute_path() {
-    local path="${1}"
+    local path="$1"
     local base="${2:-$(pwd)}"
 
     case "${path}" in
@@ -21,7 +21,7 @@ absolute_path() {
 }
 
 canonical_path() {
-    local path="${1}"
+    local path="$1"
     local dir base
 
     if [[ -d "${path}" ]]; then
@@ -51,8 +51,8 @@ repo_root_from() {
 
 require_under_root() {
     local path root
-    path="$(canonical_path "${1}")"
-    root="$(canonical_path "${2}")"
+    path="$(canonical_path "$1")"
+    root="$(canonical_path "$2")"
 
     case "${path%/}" in
     "${root%/}" | "${root%/}"/*) return 0 ;;

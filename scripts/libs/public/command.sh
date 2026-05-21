@@ -16,24 +16,31 @@ command_exists() {
         return 2
     }
 
-    command -v "${1}" >/dev/null 2>&1
+    command -v "$1" >/dev/null 2>&1
 }
 
 require_cmd() {
     local optional=false
     local command_name
+    local command_count=0
     local missing=()
 
     while [[ $# -gt 0 ]]; do
-        case "${1}" in
+        case "$1" in
         --optional) optional=true ;;
         *)
-            command_name="${1}"
+            command_name="$1"
+            ((command_count += 1))
             command_exists "${command_name}" || missing+=("${command_name}")
             ;;
         esac
         shift
     done
+
+    if ((command_count == 0)); then
+        log_error 'require_cmd requires at least one command name.'
+        exit 1
+    fi
 
     ((${#missing[@]} == 0)) && return 0
 

@@ -36,9 +36,9 @@ lc_setup_colors() {
 }
 
 lc_log_line() {
-    local stream="${1}"
-    local color="${2}"
-    local level="${3}"
+    local stream="$1"
+    local color="$2"
+    local level="$3"
     shift 3
 
     printf '%s[%s] %s:%s %s\n' \

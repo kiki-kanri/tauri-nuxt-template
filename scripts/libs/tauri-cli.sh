@@ -3,7 +3,7 @@
 # Source this file; do not execute it directly.
 
 # shellcheck shell=bash
-# shellcheck disable=SC2317 # Source guard intentionally returns when already loaded.
+# shellcheck disable=SC2317
 
 if [[ -n "${LINUX_CONFIGS_LIBS_TAURI_CLI_LOADED:-}" ]]; then
     return 0 2>/dev/null || true

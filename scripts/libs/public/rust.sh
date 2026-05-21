@@ -32,25 +32,33 @@ encode_rustflags() {
 }
 
 exec_with_encoded_rustflags() {
-    local rustflags_name="${1:-rustflags}"
-    local rustflags_value
-    shift || true
+    local rustflags_name='rustflags'
+    local -a rustflags_values=()
 
     if (($# == 0)); then
         log_error 'Missing command.'
         exit 1
     fi
 
-    eval "rustflags_value=\"\${${rustflags_name}[*]-}\""
-    if [[ -z "${rustflags_value}" ]]; then
+    if (($# > 1)) && [[ "$1" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]] && declare -p "$1" >/dev/null 2>&1; then
+        rustflags_name="$1"
+        shift
+    fi
+
+    if declare -p "${rustflags_name}" >/dev/null 2>&1; then
+        local -n selected_rustflags="${rustflags_name}"
+        rustflags_values=("${selected_rustflags[@]}")
+    fi
+
+    if ((${#rustflags_values[@]} == 0)); then
         exec "$@"
     fi
 
-    eval "exec env CARGO_ENCODED_RUSTFLAGS=\"\$(encode_rustflags \"\${${rustflags_name}[@]}\")\" \"\$@\""
+    exec env CARGO_ENCODED_RUSTFLAGS="$(encode_rustflags "${rustflags_values[@]}")" "$@"
 }
 
 ensure_cargo_target() {
-    local target="${1}"
+    local target="$1"
 
     require_cmd rustup grep
     rustup target list --installed | grep -Fxq "${target}" || rustup target add "${target}"

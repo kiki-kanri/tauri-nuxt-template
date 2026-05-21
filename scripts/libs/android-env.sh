@@ -3,7 +3,7 @@
 # Source this file after scripts/libs/common.sh and scripts/libs/project-env.sh.
 
 # shellcheck shell=bash
-# shellcheck disable=SC2317 # Source guard intentionally returns when already loaded.
+# shellcheck disable=SC2034,SC2317
 
 if [[ -n "${LINUX_CONFIGS_LIBS_ANDROID_ENV_LOADED:-}" ]]; then
     return 0 2>/dev/null || true
@@ -11,16 +11,38 @@ fi
 
 LINUX_CONFIGS_LIBS_ANDROID_ENV_LOADED=1
 
+android_require_project_env() {
+    local name
+
+    for name in \
+        BUILD_ROOT \
+        DOWNLOAD_ROOT \
+        ENV_FILE \
+        GRADLE_USER_HOME \
+        JDK_ROOT \
+        SDK_ROOT \
+        SIGNING_ROOT \
+        ANDROID_USER_HOME; do
+        require_env "${name}"
+    done
+}
+
 android_require_linux() {
     [[ "$(host_os)" == linux ]] || fail "Android environment setup currently supports Linux only"
 }
 
 android_require_host_tools() {
-    require_cmd curl awk sort find yes tar unzip
+    require_cmd awk curl find sort tar unzip yes
 }
 
 android_prepare_directories() {
-    mkdir -p -- "${DOWNLOAD_ROOT}" "${JDK_ROOT}" "${SDK_ROOT}" "${GRADLE_USER_HOME}" "${ANDROID_USER_HOME}"
+    android_require_project_env
+    mkdir -p -- \
+        "${DOWNLOAD_ROOT}" \
+        "${JDK_ROOT}" \
+        "${SDK_ROOT}" \
+        "${GRADLE_USER_HOME}" \
+        "${ANDROID_USER_HOME}"
 }
 
 android_download_file() {
@@ -42,6 +64,7 @@ android_download_file() {
 
 android_require_zip_archive() {
     local archive="${1}"
+
     unzip -tq "${archive}" >/dev/null || {
         rm -f -- "${archive}"
         fail "Downloaded archive is incomplete or invalid: ${archive}"
@@ -50,6 +73,7 @@ android_require_zip_archive() {
 
 android_install_cmdline_tools() {
     local archive extracted url
+
     archive="${DOWNLOAD_ROOT}/commandlinetools-linux-${ANDROID_CMDLINE_TOOLS_REV}_latest.zip"
     url="https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_CMDLINE_TOOLS_REV}_latest.zip"
 
@@ -103,6 +127,7 @@ android_with_java() {
 
 android_latest_sdk_package() {
     local regex="${1}"
+
     android_sdkmanager --list | awk -F'|' -v regex="${regex}" '
         {
             path = $1
@@ -197,6 +222,7 @@ EOF_PROPERTIES
 
 android_write_env_file() {
     local ndk_home
+
     ndk_home="$(android_latest_ndk_home)"
     [[ -n "${ndk_home}" ]] || fail "NDK was not installed under ${SDK_ROOT}/ndk"
 

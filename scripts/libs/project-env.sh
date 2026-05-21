@@ -28,4 +28,5 @@ ANDROID_USER_HOME="${ANDROID_ROOT}/user-home"
 SIGNING_ROOT="${ANDROID_ROOT}/signing"
 ENV_FILE="${ANDROID_ROOT}/env.sh"
 ANDROID_DIR="${TAURI_DIR}/gen/android"
+
 APPLE_DIR="${TAURI_DIR}/gen/apple"

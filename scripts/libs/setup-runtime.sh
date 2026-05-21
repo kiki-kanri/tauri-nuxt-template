@@ -13,21 +13,17 @@ LINUX_CONFIGS_LIBS_SETUP_RUNTIME_LOADED=1
 
 SETUP_RUNTIME_TEMP_DIRS=()
 
+fail() {
+    log_error "$@"
+    exit 1
+}
+
 require_env() {
     local name
 
     (($# == 1)) || fail "require_env requires exactly one variable name."
     name="${1}"
-    if [[ -n "${!name:-}" ]]; then
-        return 0
-    fi
-
-    fail "Required environment variable is not set: ${name}"
-}
-
-fail() {
-    log_error "$@"
-    exit 1
+    [[ -n "${!name:-}" ]] || fail "Required environment variable is not set: ${name}"
 }
 
 ensure_parent_dir() {
@@ -59,27 +55,31 @@ copy_dir_contents() {
     source_dir="${1}"
     target_dir="${2}"
     [[ -d "${source_dir}" ]] || fail "Source directory does not exist: ${source_dir}"
+
     mkdir -p -- "${target_dir}"
     cp -R "${source_dir}"/. "${target_dir}"/
 }
 
 copy_path_into_dir() {
-    local source_path target_dir
+    local source_path target_dir target_path
 
     (($# == 2)) || fail "copy_path_into_dir requires source path and target directory."
     source_path="${1}"
     target_dir="${2}"
+    target_path="${target_dir}/$(basename -- "${source_path}")"
+
     [[ -e "${source_path}" ]] || fail "Source path does not exist: ${source_path}"
     mkdir -p -- "${target_dir}"
+
     if [[ -d "${source_path}" ]]; then
-        cp -R -- "${source_path}" "${target_dir}/$(basename -- "${source_path}")"
+        cp -R -- "${source_path}" "${target_path}"
     else
-        cp -- "${source_path}" "${target_dir}/$(basename -- "${source_path}")"
+        cp -- "${source_path}" "${target_path}"
     fi
 }
 
 cleanup_temp_dirs() {
-    local status=$?
+    local status="${?}"
     local dir
 
     for dir in "${SETUP_RUNTIME_TEMP_DIRS[@]}"; do
@@ -95,6 +95,7 @@ install_cleanup_trap() {
 
 make_temp_dir() {
     local tmp
+
     tmp="$(mktemp -d)"
     SETUP_RUNTIME_TEMP_DIRS+=("${tmp}")
     printf '%s\n' "${tmp}"

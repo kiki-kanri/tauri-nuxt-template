@@ -11,7 +11,7 @@ fi
 LINUX_CONFIGS_LIBS_FILE_LOADED=1
 
 require_file() {
-    local path="${1}"
+    local path="$1"
 
     [[ -f "${path}" ]] || {
         log_error "Required file not found: ${path}"
@@ -20,7 +20,7 @@ require_file() {
 }
 
 require_dir() {
-    local path="${1}"
+    local path="$1"
 
     [[ -d "${path}" ]] || {
         log_error "Required directory not found: ${path}"
@@ -29,8 +29,8 @@ require_dir() {
 }
 
 install_file() {
-    local src="${1}"
-    local dest="${2}"
+    local src="$1"
+    local dest="$2"
     local mode="${3:-}"
 
     require_file "${src}" || return 1

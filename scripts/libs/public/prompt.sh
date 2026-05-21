@@ -11,14 +11,14 @@ fi
 LINUX_CONFIGS_LIBS_PROMPT_LOADED=1
 
 confirm() {
-    local prompt="${1}"
+    local prompt="$1"
     local default='no'
     local force=false
     local answer options
     shift || true
 
     while [[ $# -gt 0 ]]; do
-        case "${1}" in
+        case "$1" in
         --default=yes | -y) default='yes' ;;
         --default=no | -n) default='no' ;;
         --force | -f) force=true ;;

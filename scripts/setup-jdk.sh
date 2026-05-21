@@ -7,10 +7,10 @@ set -euo pipefail
 
 JAVA_MAJOR_VERSION=21
 ADOPTIUM_OS=linux
-ADOPTIUM_ARCH=x64
+ADOPTIUM_ARCH=''
 ADOPTIUM_IMAGE_TYPE=jdk
 ADOPTIUM_VENDOR=eclipse
-ADOPTIUM_API_URL="https://api.adoptium.net/v3/assets/latest/${JAVA_MAJOR_VERSION}/hotspot?architecture=${ADOPTIUM_ARCH}&image_type=${ADOPTIUM_IMAGE_TYPE}&os=${ADOPTIUM_OS}&vendor=${ADOPTIUM_VENDOR}"
+ADOPTIUM_API_URL=''
 ECLIPSE_MIRROR_LIST_URL="https://download.eclipse.org/oomph/archive/mirror.php?location=temurin-compliance/temurin"
 
 SCRIPT_DIR="$(cd -P -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
@@ -22,6 +22,22 @@ source "${SCRIPT_DIR}/libs/common.sh"
 source "${SCRIPT_DIR}/libs/project-env.sh"
 
 JDK_VERSION_FILE="${JDK_ROOT}/.temurin-version"
+
+jdk_adoptium_arch() {
+    case "$(detect_architecture)" in
+    x86_64) printf 'x64\n' ;;
+    aarch64) printf 'aarch64\n' ;;
+    esac
+}
+
+adoptium_api_url() {
+    printf 'https://api.adoptium.net/v3/assets/latest/%s/hotspot?architecture=%s&image_type=%s&os=%s&vendor=%s\n' \
+        "${JAVA_MAJOR_VERSION}" \
+        "${ADOPTIUM_ARCH}" \
+        "${ADOPTIUM_IMAGE_TYPE}" \
+        "${ADOPTIUM_OS}" \
+        "${ADOPTIUM_VENDOR}"
+}
 
 usage() {
     cat <<'EOF_USAGE'
@@ -198,6 +214,8 @@ main() {
     esac
 
     [[ "$(host_os)" == linux ]] || fail "JDK setup supports Linux only"
+    ADOPTIUM_ARCH="$(jdk_adoptium_arch)"
+    ADOPTIUM_API_URL="$(adoptium_api_url)"
     require_jdk_setup_tools
     install_cleanup_trap
     mkdir -p -- "${DOWNLOAD_ROOT}"
