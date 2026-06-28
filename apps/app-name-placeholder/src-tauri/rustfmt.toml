@@ -1,5 +1,0 @@
-group_imports = "StdExternalCrate"
-imports_granularity = "Crate"
-imports_layout = "Vertical"
-max_width = 120
-newline_style = "Unix"

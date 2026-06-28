@@ -1,50 +1,274 @@
 [package]
 name = "app-name-placeholder"
 version = "0.1.0"
-
-authors.workspace = true
-categories.workspace = true
-description = ""
 edition.workspace = true
-homepage.workspace = true
-include = [
-  "Cargo.toml",
-  "README.md",
-  "src/**/*",
-]
 
-keywords.workspace = true
+description = ""
+# documentation = "https://docs.rs/crate-name"
+# homepage.workspace = true
 license.workspace = true
 readme = "./README.md"
 repository.workspace = true
 
+categories.workspace = true
+keywords.workspace = true
+
+include = [
+  "Cargo.toml",
+  "LICENSE*",
+  "README.md",
+  "benches/**",
+  "examples/**",
+  "src/**",
+  "tests/**",
+]
+
+# Prevent accidental publishing for private/internal crates.
+# publish = false
+
+# Only needed when using native linking / sys crates.
+# links = "native-library-name"
+
+# Cargo auto-detects build.rs by default.
+# Use `build = false` to disable auto-detection, or a custom path if needed.
+# build = "build.rs"
+
+# Optional cargo/tool metadata.
+# [package.metadata]
+
+
+# =============================================================================
+# Lints
+# =============================================================================
+
+[lints]
+workspace = true
+
+# =============================================================================
+# Features
+# =============================================================================
+
+[features]
+default = []
+
+# Convenience aliases.
+all = []
+full = ["all"]
+
+# Example:
+# serde = ["dep:serde"]
+# cli = ["dep:clap"]
+# async = ["dep:tokio"]
+
+# Define features here.
+
+
+# =============================================================================
+# Dependencies
+# =============================================================================
+
+[dependencies]
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.150"
+tauri = { version = "2.11.3", features = [] }
+tauri-plugin-opener = "2.5.4"
+
+# -----------------------------------------------------------------------------
+# OS / family-specific dependencies
+# -----------------------------------------------------------------------------
+
+# Applies to Linux, macOS, BSD, Android, iOS, etc.
+[target.'cfg(unix)'.dependencies]
+
+
+[target.'cfg(windows)'.dependencies]
+
+
+# Linux-only deps.
+[target.'cfg(target_os = "linux")'.dependencies]
+
+
+# macOS-only deps.
+[target.'cfg(target_os = "macos")'.dependencies]
+
+
+# Windows-only deps. Usually same as cfg(windows), but kept explicit for template clarity.
+[target.'cfg(target_os = "windows")'.dependencies]
+
+
+[target.'cfg(target_family = "wasm")'.dependencies]
+
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+
+# -----------------------------------------------------------------------------
+# Target cfg / ABI-specific dependencies
+# -----------------------------------------------------------------------------
+
+# Linux GNU / glibc only.
+[target.'cfg(all(target_os = "linux", target_env = "gnu"))'.dependencies]
+
+
+# Linux musl only.
+[target.'cfg(all(target_os = "linux", target_env = "musl"))'.dependencies]
+
+
+# Windows MSVC only.
+[target.'cfg(all(target_os = "windows", target_env = "msvc"))'.dependencies]
+
+
+# Windows GNU only.
+[target.'cfg(all(target_os = "windows", target_env = "gnu"))'.dependencies]
+
+
+# macOS Intel only.
+[target.'cfg(all(target_os = "macos", target_arch = "x86_64"))'.dependencies]
+
+
+# macOS Apple Silicon only.
+[target.'cfg(all(target_os = "macos", target_arch = "aarch64"))'.dependencies]
+
+
+# Custom sections for exact target triples or custom target cfgs.
+# Examples:
+# [target.'aarch64-unknown-linux-musl'.dependencies]
+# [target.'aarch64-apple-ios'.dependencies]
+# [target.'aarch64-linux-android'.dependencies]
+# [target.'wasm32-unknown-unknown'.dependencies]
+# [target.'cfg(all(target_os = "linux", target_env = "musl"))'.dependencies]
+# [target.'cfg(all(target_vendor = "apple", target_arch = "aarch64"))'.dependencies]
+
+# =============================================================================
+# Build dependencies
+# =============================================================================
+
+# Build-script-only dependencies.
+[build-dependencies]
+tauri-build = { version = "2.6.3", features = [] }
+
+# -----------------------------------------------------------------------------
+# Target-specific build dependencies
+# -----------------------------------------------------------------------------
+
+# Unix build-script deps.
+[target.'cfg(unix)'.build-dependencies]
+
+
+# Windows build-script deps.
+[target.'cfg(windows)'.build-dependencies]
+
+
+# Linux build-script deps.
+[target.'cfg(target_os = "linux")'.build-dependencies]
+
+
+# macOS build-script deps.
+[target.'cfg(target_os = "macos")'.build-dependencies]
+
+
+# Windows build-script deps.
+[target.'cfg(target_os = "windows")'.build-dependencies]
+
+
+# WASM build-script deps.
+[target.'cfg(target_family = "wasm")'.build-dependencies]
+
+
+# wasm32 build-script deps.
+[target.'cfg(target_arch = "wasm32")'.build-dependencies]
+
+
+# Custom sections for exact target triples or custom target cfgs.
+# Examples:
+# [target.'aarch64-unknown-linux-musl'.build-dependencies]
+# [target.'aarch64-apple-ios'.build-dependencies]
+# [target.'aarch64-linux-android'.build-dependencies]
+# [target.'wasm32-unknown-unknown'.build-dependencies]
+# [target.'cfg(all(target_os = "linux", target_env = "musl"))'.build-dependencies]
+# [target.'cfg(all(target_vendor = "apple", target_arch = "aarch64"))'.build-dependencies]
+
+# =============================================================================
+# Development dependencies
+# =============================================================================
+
+# Test/example/bench-only dependencies.
+[dev-dependencies]
+
+
+# -----------------------------------------------------------------------------
+# Target-specific development dependencies
+# -----------------------------------------------------------------------------
+
+# Unix-only test deps.
+[target.'cfg(unix)'.dev-dependencies]
+
+
+# Windows-only test deps.
+[target.'cfg(windows)'.dev-dependencies]
+
+
+# Linux-only test deps.
+[target.'cfg(target_os = "linux")'.dev-dependencies]
+
+
+# macOS-only test deps.
+[target.'cfg(target_os = "macos")'.dev-dependencies]
+
+
+# Windows-only test deps.
+[target.'cfg(target_os = "windows")'.dev-dependencies]
+
+
+# WASM-only test deps.
+[target.'cfg(target_family = "wasm")'.dev-dependencies]
+
+
+# wasm32-only test deps.
+[target.'cfg(target_arch = "wasm32")'.dev-dependencies]
+
+
+# Custom sections for exact target triples or custom target cfgs.
+# Examples:
+# [target.'aarch64-unknown-linux-musl'.dev-dependencies]
+# [target.'aarch64-apple-ios'.dev-dependencies]
+# [target.'aarch64-linux-android'.dev-dependencies]
+# [target.'wasm32-unknown-unknown'.dev-dependencies]
+# [target.'cfg(all(target_os = "linux", target_env = "musl"))'.dev-dependencies]
+# [target.'cfg(all(target_vendor = "apple", target_arch = "aarch64"))'.dev-dependencies]
+
+# =============================================================================
+# Library / binary / examples / tests / benches
+# =============================================================================
+
+# Usually not needed if using the default `src/lib.rs`.
 [lib]
-# The `_lib` suffix may seem redundant but it is necessary
-# to make the lib name unique and wouldn't conflict with the bin name.
-# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "app_name_placeholder_rust_lib"
 crate-type = [
   "staticlib",
   "cdylib",
   "rlib"
 ]
 
-name = "app_name_placeholder_rust_lib"
 
-# Dependencies
-[dependencies]
-serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.150"
-tauri = { version = "2.11.2", features = [] }
-tauri-plugin-opener = "2.5.4"
+# Usually not needed if using the default `src/main.rs`.
+# [[bin]]
+# name = "crate-name"
+# path = "src/main.rs"
+# required-features = []
 
-[build-dependencies]
-tauri-build = { version = "2.6.2", features = [] }
+# [[example]]
+# name = "example-name"
+# path = "examples/example-name.rs"
+# required-features = []
 
-# Features
-[features]
-## Define features
+# Usually auto-discovered from `tests/*.rs`.
+# [[test]]
+# name = "integration"
+# path = "tests/integration.rs"
+# required-features = []
 
-## Default and alias
-default = []
-all = []
-full = ["all"]
+# [[bench]]
+# name = "benchmark-name"
+# path = "benches/benchmark-name.rs"
+# harness = false
+# required-features = []
